@@ -1,14 +1,14 @@
 const jwt = require("jsonwebtoken");
 const userModel = require("../models/userModel");
 
-const createUser = async function (abcd, xyz) {
+const createUser = async function (req, res) {
   //You can name the req, res objects anything.
   //but the first parameter is always the request 
   //the second parameter is always the response
-  let data = abcd.body;
+  let data = req.body;
   let savedData = await userModel.create(data);
-  console.log(abcd.newAtribute);
-  xyz.send({ msg: savedData });
+  console.log(savedData.newAtribute);
+  res.send({ msg: savedData });
 };
 
 const loginUser = async function (req, res) {
@@ -41,14 +41,14 @@ const loginUser = async function (req, res) {
 };
 
 const getUserData = async function (req, res) {
-  let token = req.headers["x-Auth-token"];
-  if (!token) token = req.headers["x-auth-token"];
+  // let token = req.headers["x-Auth-token"];
+  // if (!token) token = req.headers["x-auth-token"];
 
   //If no token is present in the request header return error
-  if (!token) return res.send({ status: false, msg: "token must be present" });
+  // if (!token) return res.send({ status: false, msg: "token is not available " });
 
-  console.log(token);
-  
+  // console.log(token);
+
   // If a token is present then decode the token with verify function
   // verify takes two inputs:
   // Input 1 is the token to be decoded
@@ -67,10 +67,17 @@ const getUserData = async function (req, res) {
 };
 
 const updateUser = async function (req, res) {
-// Do the same steps here:
-// Check if the token is present
-// Check if the token present is a valid token
-// Return a different error message in both these cases
+  let token = req.headers["x-Auth-token"];
+  if (!token) token = req.headers["x-auth-token"];
+  if (!token) return res.send({ status: false, msg: "token is not available " });
+  let decodedToken = jwt.verify(token, "functionup-radon");
+  if (!decodedToken)
+    return res.send({ status: false, msg: "token is invalid enter valid token" });
+
+  // Do the same steps here:
+  // Check if the token is present
+  // Check if the token present is a valid token
+  // Return a different error message in both these cases
 
   let userId = req.params.userId;
   let user = await userModel.findById(userId);
@@ -84,7 +91,23 @@ const updateUser = async function (req, res) {
   res.send({ status: updatedUser, data: updatedUser });
 };
 
+const deletData = async function (req, res) {
+
+  let token = req.headers["x-Auth-token"];
+  if (!token) token = req.headers["x-auth-token"];
+  if (!token) return res.send({ status: false, msg: "token is not available " });
+  let decodedToken = jwt.verify(token, "functionup-radon");
+  if (!decodedToken)
+    return res.send({ status: false, msg: "token is invalid enter valid token" });
+
+    let userId = req.params.userId;
+  let updatedUser = await userModel.findOneAndUpdate({ _id: userId },
+     { $set:{isDeleted: true } });
+  res.send({ status: updatedUser, data: updatedUser });
+}
+
 module.exports.createUser = createUser;
 module.exports.getUserData = getUserData;
 module.exports.updateUser = updateUser;
 module.exports.loginUser = loginUser;
+module.exports.deletData = deletData
