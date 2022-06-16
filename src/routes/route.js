@@ -9,8 +9,9 @@ router.get("/test-me", function (req, res) {
     res.send("My first ever api!")
 })
 
+router.get("/getbooks",BookController.getBooksData);
 
-
+router.put("/updateboks",BookController.updateBooks)
 
 router.post("/createBook", BookController.createBook  )
 

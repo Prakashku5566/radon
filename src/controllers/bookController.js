@@ -6,11 +6,11 @@ const createBook = async function (req, res) {
     try {
         let data = req.body
         console.log(data)
-        if ( Object.keys(data).length != 0) {
+        if (Object.keys(data).length != 0) {
             let savedData = await BookModel.create(data)
             res.status(201).send({ msg: savedData })
         }
-        else res.status(400).send({ msg: "BAD REQUEST"})
+        else res.status(400).send({ msg: "BAD REQUEST" })
     }
     catch (err) {
         console.log("This is the error :", err.message)
@@ -43,59 +43,67 @@ const createBook = async function (req, res) {
 // --- "ALL GOOD and A NEW RESOURCE WAS SUCCEFULLY CREATED" ...status(201)..e.g a new user registers herself successfully
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 const getBooksData = async function (req, res) {
-    let allBooks = await BookModel.find({ authorName: "HO" })
-    console.log(allBooks)
-    if (allBooks.length > 0) res.send({ msg: allBooks, condition: true })
-    else res.send({ msg: "No books found", condition: false })
+    try {
+        let allBooks = await BookModel.find({ authorName: "HO" })
+        console.log(allBooks)
+        if (allBooks.length > 0) res.send({ msg: allBooks, condition: true })
+        else res.send({ msg: "No books found", condition: false })
+    }
+    catch (err) {
+        console.log("it includes some error :", err.message)
+        res.status(501).send({ msg: "Error", error: err.message })
+    }
 }
 
 
 const updateBooks = async function (req, res) {
-    let data = req.body // {sales: "1200"}
-    // let allBooks= await BookModel.updateMany( 
-    //     { author: "SK"} , //condition
-    //     { $set: data } //update in data
-    //  )
-    let allBooks = await BookModel.findOneAndUpdate(
-        { authorName: "ABC" }, //condition
-        { $set: data }, //update in data
-        { new: true, upsert: true } ,// new: true - will give you back the updated document // Upsert: it finds and updates the document but if the doc is not found(i.e it does not exist) then it creates a new document i.e UPdate Or inSERT
-    )
+    try {
+        //let data = req.body // {sales: "1200"}
+         let allBooks= await BookModel.updateMany( 
+            { author: "SK"} , //condition
+            { $set: data } //update in data
+         )
+        if (!data) {
+            res.status(402).send({ message: "requires data in body" })
+        }
+        // let allBooks = await BookModel.findOneAndUpdate(
+        //     { authorName: "ABC" }, //condition
+        // { $set: data }, //update in data
+        // { new: true, upsert: true } ,// new: true - will give you back the updated document // Upsert: it finds and updates the document but if the doc is not found(i.e it does not exist) then it creates a new document i.e UPdate Or inSERT
+    
+       }
+    catch (error) {
+    console.log("contains some error", error.message)
 
-    res.send({ msg: allBooks })
+    res.status(401).send({ message: "error", error: error.message })
+
+
+res.send({ msg: allBooks })
 }
-
+}
 const deleteBooks = async function (req, res) {
-    // let data = req.body 
-    let allBooks = await BookModel.updateMany(
-        { authorName: "FI" }, //condition
-        { $set: { isDeleted: true } }, //update in data
-        { new: true } ,
-    )
-
+    try {
+        let data = req.body
+        if(!data){
+            res.status(404).send({message:"data requires for"})
+        }
+        let allBooks = await BookModel.updateMany(
+            { authorName: "FI" }, //condition
+            { $set: { isDeleted: true } }, //update in data
+            { new: true } ,
+        )
+    }
+    catch (err) {
+        res.status(404).send({ error: err.message })
+    }
     res.send({ msg: allBooks })
 }
 
 
 
 const totalSalesPerAuthor = async function (req, res) {
+    try{
     // let data = req.body 
     let allAuthorSales = await BookModel.aggregate(
         [
@@ -103,7 +111,10 @@ const totalSalesPerAuthor = async function (req, res) {
             { $sort: { totalNumberOfSales: -1 } }
         ]
     )
-
+    }
+    catch(error){
+        res.send({msg:"it seems some error"})
+    }
     res.send({ msg: allAuthorSales })
 }
 
